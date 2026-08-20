@@ -1921,3 +1921,24 @@ with _page_ams:
 
 with _page_prod:
     _render_beef_production()
+
+# ── Disclaimer Footer ──────────────────────────────────────────────────────────
+_yr = datetime.now().year
+st.markdown(
+    f'<div style="margin-top:48px;padding:16px 20px;border-top:1px solid {DM_BORDER};'
+    f'color:{DM_MUTED};font-size:0.72rem;line-height:1.6;">'
+    f'Trading commodity futures, options on futures, cash commodities, and over-the-counter '
+    f'derivative products involves substantial risk of loss and may not be suitable for all investors. '
+    f'This communication is provided for informational purposes only and does not constitute investment '
+    f'advice, a recommendation, or an offer or solicitation to buy or sell any futures, options, cash '
+    f'commodities, or derivative products. John Stewart &amp; Associates, Inc. does not accept orders '
+    f'to buy or sell any financial instruments via email. The information contained herein has been '
+    f'obtained from sources believed to be reliable; however, its accuracy and completeness are not '
+    f'guaranteed. Any opinions expressed are solely those of the author, are subject to change without '
+    f'notice, and should not be relied upon as a basis for investment decisions. Past performance is '
+    f'not indicative of future results. This message may contain confidential or proprietary '
+    f'information intended solely for the use of the designated recipient. '
+    f'&copy; John Stewart &amp; Associates, Inc. {_yr}'
+    f'</div>',
+    unsafe_allow_html=True,
+)
