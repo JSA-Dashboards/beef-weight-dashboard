@@ -51,12 +51,7 @@ FILTER_DISPLAY = {**CLASS_DISPLAY, "GE 500 LBS": "All Cattle"}
 def _fmt_cls(c: str) -> str:
     return FILTER_DISPLAY.get(c, c.title())
 
-try:
-    API_KEY = st.secrets.get("NASS_API_KEY", "9A6D1EB8-4D94-3221-BA0C-ADD4533EA0C1")
-except Exception:
-    API_KEY = "9A6D1EB8-4D94-3221-BA0C-ADD4533EA0C1"
-
-BASE_URL = "https://quickstats.nass.usda.gov/api/api_GET/"
+from nass_cache_client import fetch_cached
 
 st.set_page_config(
     page_title="JSA Beef Weight Dashboard",
@@ -158,16 +153,13 @@ st.markdown(f"""
 # ── Data fetching ──────────────────────────────────────────────────────────────
 
 def _nass_get(params: dict) -> dict:
-    for attempt in range(3):
-        try:
-            r = requests.get(BASE_URL, params=params, timeout=60)
-            return r.json()
-        except requests.exceptions.Timeout:
-            if attempt < 2:
-                continue
-        except Exception:
-            pass
-    return {}
+    # Reads the shared NASS cache (see usda-nass-etl) instead of calling
+    # NASS live -- this dashboard no longer holds a NASS API key.
+    try:
+        return fetch_cached(params)
+    except Exception as e:
+        st.error(f"NASS cache error: {e}")
+        return {}
 
 
 
@@ -283,7 +275,6 @@ def fetch_data(years: tuple) -> pd.DataFrame:
     frames = []
     for year in years:
         params = {
-            "key":               API_KEY,
             "source_desc":       "SURVEY",
             "sector_desc":       "ANIMALS & PRODUCTS",
             "group_desc":        "LIVESTOCK",
@@ -292,7 +283,6 @@ def fetch_data(years: tuple) -> pd.DataFrame:
             "freq_desc":         "WEEKLY",
             "state_alpha":       "US",
             "year":              year,
-            "format":            "JSON",
         }
         payload = _nass_get(params)
         if "data" in payload and payload["data"]:
@@ -306,7 +296,6 @@ def fetch_vol_data(years: tuple) -> pd.DataFrame:
     frames = []
     for year in years:
         params = {
-            "key":               API_KEY,
             "source_desc":       "SURVEY",
             "sector_desc":       "ANIMALS & PRODUCTS",
             "group_desc":        "LIVESTOCK",
@@ -316,7 +305,6 @@ def fetch_vol_data(years: tuple) -> pd.DataFrame:
             "freq_desc":         "WEEKLY",
             "state_alpha":       "US",
             "year":              year,
-            "format":            "JSON",
         }
         payload = _nass_get(params)
         if "data" in payload and payload["data"]:
